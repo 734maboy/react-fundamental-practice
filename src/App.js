@@ -2,8 +2,9 @@ import React, { useMemo, useState } from 'react'
 import './styles/app.css'
 import PostList from './components/PostList'
 import PostForm from './components/PostForm'
-import SeSelect from './components/UI/select/SeSelect'
-import SeInput from './components/UI/input/SeInput'
+import PostFilter from './components/PostFilter'
+import SeModal from './components/UI/SeModal/SeModal'
+import SeButton from './components/UI/button/SeButton'
 
 function App() {
   const [posts, setPosts] = useState([
@@ -16,62 +17,49 @@ function App() {
     { id: 7, title: 'PHP', body: 'Description' },
   ]);
 
-  const [selectedSort, setSelectedSort] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState({ sort: '', query: ''});
+  const [visible, setVisible] = useState(false);
 
   const sortedPosts = useMemo(() => {
-    if (selectedSort) {
-      return [...posts].sort((a, b) => a[selectedSort].localeCompare(b[selectedSort]));
+    if (filter.sort) {
+      return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
     }
     return posts;
-  }, [selectedSort, posts]);
+  }, [filter.sort, posts]);
 
   const sortedAndSearchPosts = useMemo( () => {
-    if (searchQuery) {
-      return sortedPosts.filter( post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    if (filter.query) {
+      return sortedPosts.filter( post => post.title.toLowerCase().includes(filter.query.toLowerCase()));
     }
     return sortedPosts;
-  }, [searchQuery, sortedPosts ]);
+  }, [filter.query, sortedPosts ]);
 
   function createPost(newPost) {
     setPosts([...posts, newPost]);
+    setVisible(false);
   }
 
   function removePost(id) {
-    console.log(id);
     setPosts(posts.filter(p => p.id !== id));
-  }
-
-  function sortPosts(sort) {
-    setSelectedSort(sort);
   }
 
   return (
     <div className="App">
-      <PostForm create={createPost}/>
+      <SeButton
+        style={{marginTop: '25px'}}
+        onClick={() => setVisible(true)}
+      >
+        Создать пост
+      </SeButton>
+      <SeModal visible={visible} setVisible={setVisible}>
+        <PostForm create={createPost}/>
+      </SeModal>
       <hr style={{margin: '15px 0px'}}/>
-      <div>
-        <SeInput
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Поиск..."
-        />
-        <SeSelect
-          value={selectedSort}
-          onChange={sortPosts}
-          defaultValue={"Сортировка По"}
-          options={[
-            {value: "title", name: "По названию"},
-            {value: "body", name: "По описанию"},
-          ]}
-        />
-      </div>
-      {
-        sortedPosts.length !== 0
-        ? <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
-        : <h1 style={{textAlign: 'center'}}> Посты не были найдены </h1>
-      }
-
+      <PostFilter
+        filter={filter}
+        setFilter={setFilter}
+      />
+      <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
     </div>
   );
 }
