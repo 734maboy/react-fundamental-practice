@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import './styles/app.css'
 import PostList from './components/PostList'
 import SeButton from './components/UI/button/SeButton'
@@ -17,15 +17,21 @@ function App() {
   ]);
 
   const [title, setTitle] = useState("");
-  const bodyInputRef = useRef();
-  // const [body, setBody] = useState("");
+  const [body, setBody] = useState("");
 
 
 
   function addNewPost(e) {
     e.preventDefault();
-    console.log(bodyInputRef.current.value);
-    // console.log(title, body)
+    const newPost = {
+      id: Date.now(),
+      title,
+      body,
+    };
+
+    setPosts([...posts, newPost]);
+    setBody('');
+    setTitle('');
   }
 
   return (
@@ -38,11 +44,11 @@ function App() {
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
-        {/*Неуправляемый компонент*/}
         <SeInput
-          ref={bodyInputRef}
           type="text"
           placeholder={"Описание поста"}
+          value={body}
+          onChange={e => setBody(e.target.value)}
         />
         <SeButton onClick={addNewPost}> Создать пост </SeButton>
       </form>
