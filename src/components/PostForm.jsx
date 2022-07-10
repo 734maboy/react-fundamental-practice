@@ -12,7 +12,7 @@ const PostForm = ({ create }) => {
 	function addNewPost(e) {
 		e.preventDefault();
 
-		if (create instanceof Function)  create(post);
+		if (create instanceof Function)  create({ ...post, id: Date.now()});
 		setPost({  title: "", body: "", });
 	}
 
