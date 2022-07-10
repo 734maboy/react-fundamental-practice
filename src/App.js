@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import './styles/app.css'
-import PostItem from './components/PostItem'
 import PostList from './components/PostList'
+import SeButton from './components/UI/button/SeButton'
+import SeInput from './components/UI/input/SeInput'
 
 function App() {
   const [posts, setPosts] = useState([
@@ -15,9 +16,27 @@ function App() {
 
   ]);
 
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+
 
   return (
     <div className="App">
+      <form>
+        <SeInput
+          type="text"
+          placeholder={"Название поста"}
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+        />
+        <SeInput
+          type="text"
+          placeholder={"Описание поста"}
+          value={body}
+          onChange={e => setBody(e.target.value)}
+        />
+        <SeButton disabled> Создать пост </SeButton>
+      </form>
       <PostList posts={posts} title={"Список постов"}/>
     </div>
   );
