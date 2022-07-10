@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import './styles/app.css'
 import PostList from './components/PostList'
 import SeButton from './components/UI/button/SeButton'
@@ -17,25 +17,34 @@ function App() {
   ]);
 
   const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const bodyInputRef = useRef();
+  // const [body, setBody] = useState("");
 
+
+
+  function addNewPost(e) {
+    e.preventDefault();
+    console.log(bodyInputRef.current.value);
+    // console.log(title, body)
+  }
 
   return (
     <div className="App">
       <form>
+        {/*Управляемый компонент*/}
         <SeInput
           type="text"
           placeholder={"Название поста"}
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
+        {/*Неуправляемый компонент*/}
         <SeInput
+          ref={bodyInputRef}
           type="text"
           placeholder={"Описание поста"}
-          value={body}
-          onChange={e => setBody(e.target.value)}
         />
-        <SeButton disabled> Создать пост </SeButton>
+        <SeButton onClick={addNewPost}> Создать пост </SeButton>
       </form>
       <PostList posts={posts} title={"Список постов"}/>
     </div>
