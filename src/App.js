@@ -5,6 +5,7 @@ import PostForm from './components/PostForm'
 import PostFilter from './components/PostFilter'
 import SeModal from './components/UI/SeModal/SeModal'
 import SeButton from './components/UI/button/SeButton'
+import { usePosts } from './hooks/usePosts'
 
 function App() {
   const [posts, setPosts] = useState([
@@ -20,24 +21,12 @@ function App() {
   const [filter, setFilter] = useState({ sort: '', query: ''});
   const [visible, setVisible] = useState(false);
 
-  const sortedPosts = useMemo(() => {
-    if (filter.sort) {
-      return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
-    }
-    return posts;
-  }, [filter.sort, posts]);
-
-  const sortedAndSearchPosts = useMemo( () => {
-    if (filter.query) {
-      return sortedPosts.filter( post => post.title.toLowerCase().includes(filter.query.toLowerCase()));
-    }
-    return sortedPosts;
-  }, [filter.query, sortedPosts ]);
-
   function createPost(newPost) {
     setPosts([...posts, newPost]);
     setVisible(false);
   }
+
+  const sortedAndSearchPosts = usePosts(posts, filter.sort, filter.query);
 
   function removePost(id) {
     setPosts(posts.filter(p => p.id !== id));
