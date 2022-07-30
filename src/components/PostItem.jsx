@@ -1,6 +1,10 @@
 import React from 'react'
+import SeButton from './UI/button/SeButton'
+import { useNavigate } from 'react-router'
 
 const PostItem = (props) => {
+
+  const navigate = useNavigate();
   return (
     <div className="post">
       <div className="post__content">
@@ -10,7 +14,12 @@ const PostItem = (props) => {
         </div>
       </div>
       <div className="post__btns">
-        <button onClick={() => props.remove(props.post.id)}> Удалить </button>
+        <SeButton onClick={() => {
+          navigate(`/posts/${props.post.id}`)
+        }}>
+          Открыть
+        </SeButton>
+        <SeButton onClick={() => props.remove(props.post.id)}> Удалить </SeButton>
       </div>
     </div>
   )

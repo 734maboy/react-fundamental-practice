@@ -12,5 +12,17 @@ export default class PostService {
 			 }
 		});
 		return response;
+	};
+
+	static async getById(id) {
+		let response = {};
+		response = await axios.get(this.baseUrl + `/${id}`);
+		return response.data;
+	};
+
+	static async getPostComments(id) {
+		let response = {};
+		response = await axios.get(this.baseUrl + `/${id}/comments`);
+		return response.data;
 	}
 }
