@@ -9,15 +9,28 @@ import { usePosts } from './hooks/usePosts'
 import PostService from './API/PostService'
 import Loader from './components/UI/Loader/Loader'
 import { useFetching } from './hooks/useFetching'
+import { getPagesCount } from './utils/Pagination'
+import Pagination from './components/UI/Pagination/Pagination'
 
 function App() {
   const [posts, setPosts] = useState([]);
 
   const [filter, setFilter] = useState({ sort: '', query: ''});
   const [visible, setVisible] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+
+
+  const changePage = (pageNumber) => {
+    setPage(pageNumber);
+  }
+
   const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
-    const data = await PostService.getAll();
-    setPosts(data);
+    const response = await PostService.getAll(limit, page);
+    setPosts(response.data);
+    const totalCount = response.headers['x-total-count'];
+    setTotalPages(getPagesCount(totalCount, limit));
   })
 
 
@@ -27,8 +40,8 @@ function App() {
   }
 
   useEffect(() => {
-    fetchPosts();
-  }, [])
+    fetchPosts(limit, page);
+  }, [page]);
 
   const sortedAndSearchPosts = usePosts(posts, filter.sort, filter.query);
 
@@ -55,13 +68,18 @@ function App() {
       {
         postError && <h1> Произошла ошибка ${postError} </h1>
       }
+      <Pagination
+        totalPages={totalPages}
+        currentPage={page}
+        changePageCallback={changePage}
+      />
       {isPostLoading
           ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
               <Loader/>
             </div>
           : <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
-
       }
+
 
     </div>
   );
