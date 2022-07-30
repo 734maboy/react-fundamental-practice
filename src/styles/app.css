@@ -45,3 +45,25 @@
     transform: scale(0);
     transition: all 200ms ease-in;
 }
+
+.page__wrapper {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0 10px 0;
+}
+
+.page {
+    padding: 10px;
+    border: 1px solid teal;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.page__current {
+    border: 2px solid orange;
+    font-weight: bold;
+}

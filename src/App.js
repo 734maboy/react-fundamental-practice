@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './styles/app.css'
 import PostList from './components/PostList'
 import PostForm from './components/PostForm'
@@ -6,25 +6,42 @@ import PostFilter from './components/PostFilter'
 import SeModal from './components/UI/SeModal/SeModal'
 import SeButton from './components/UI/button/SeButton'
 import { usePosts } from './hooks/usePosts'
+import PostService from './API/PostService'
+import Loader from './components/UI/Loader/Loader'
+import { useFetching } from './hooks/useFetching'
+import { getPagesCount } from './utils/Pagination'
+import Pagination from './components/UI/Pagination/Pagination'
 
 function App() {
-  const [posts, setPosts] = useState([
-    { id: 1, title: 'Javascript', body: 'Best' },
-    { id: 2, title: 'С#', body: 'Worst' },
-    { id: 3, title: 'Java', body: 'Aragupega' },
-    { id: 4, title: 'Ruby', body: 'Zywooooo' },
-    { id: 5, title: 'C/C++', body: 'Malishki' },
-    { id: 6, title: 'Python', body: 'FingerPrint' },
-    { id: 7, title: 'PHP', body: 'Description' },
-  ]);
+  const [posts, setPosts] = useState([]);
 
   const [filter, setFilter] = useState({ sort: '', query: ''});
   const [visible, setVisible] = useState(false);
+  const [totalPages, setTotalPages] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [page, setPage] = useState(1);
+
+
+  const changePage = (pageNumber) => {
+    setPage(pageNumber);
+  }
+
+  const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
+    const response = await PostService.getAll(limit, page);
+    setPosts(response.data);
+    const totalCount = response.headers['x-total-count'];
+    setTotalPages(getPagesCount(totalCount, limit));
+  })
+
 
   function createPost(newPost) {
     setPosts([...posts, newPost]);
     setVisible(false);
   }
+
+  useEffect(() => {
+    fetchPosts(limit, page);
+  }, [page]);
 
   const sortedAndSearchPosts = usePosts(posts, filter.sort, filter.query);
 
@@ -48,7 +65,22 @@ function App() {
         filter={filter}
         setFilter={setFilter}
       />
-      <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
+      {
+        postError && <h1> Произошла ошибка ${postError} </h1>
+      }
+      <Pagination
+        totalPages={totalPages}
+        currentPage={page}
+        changePageCallback={changePage}
+      />
+      {isPostLoading
+          ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
+              <Loader/>
+            </div>
+          : <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
+      }
+
+
     </div>
   );
 }
