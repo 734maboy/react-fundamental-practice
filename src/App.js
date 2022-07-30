@@ -1,88 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import './styles/app.css'
-import PostList from './components/PostList'
-import PostForm from './components/PostForm'
-import PostFilter from './components/PostFilter'
-import SeModal from './components/UI/SeModal/SeModal'
-import SeButton from './components/UI/button/SeButton'
-import { usePosts } from './hooks/usePosts'
-import PostService from './API/PostService'
-import Loader from './components/UI/Loader/Loader'
-import { useFetching } from './hooks/useFetching'
-import { getPagesCount } from './utils/Pagination'
-import Pagination from './components/UI/Pagination/Pagination'
+import { BrowserRouter } from 'react-router-dom'
+import Navbar from './components/UI/Navbar/Navbar'
+import AppRouter from './components/AppRouter'
 
 function App() {
-  const [posts, setPosts] = useState([]);
-
-  const [filter, setFilter] = useState({ sort: '', query: ''});
-  const [visible, setVisible] = useState(false);
-  const [totalPages, setTotalPages] = useState(0);
-  const [limit, setLimit] = useState(10);
-  const [page, setPage] = useState(1);
-
-
-  const changePage = (pageNumber) => {
-    setPage(pageNumber);
-  }
-
-  const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
-    const response = await PostService.getAll(limit, page);
-    setPosts(response.data);
-    const totalCount = response.headers['x-total-count'];
-    setTotalPages(getPagesCount(totalCount, limit));
-  })
-
-
-  function createPost(newPost) {
-    setPosts([...posts, newPost]);
-    setVisible(false);
-  }
-
-  useEffect(() => {
-    fetchPosts(limit, page);
-  }, [page]);
-
-  const sortedAndSearchPosts = usePosts(posts, filter.sort, filter.query);
-
-  function removePost(id) {
-    setPosts(posts.filter(p => p.id !== id));
-  }
-
   return (
-    <div className="App">
-      <SeButton
-        style={{marginTop: '25px'}}
-        onClick={() => setVisible(true)}
-      >
-        Создать пост
-      </SeButton>
-      <SeModal visible={visible} setVisible={setVisible}>
-        <PostForm create={createPost}/>
-      </SeModal>
-      <hr style={{margin: '15px 0px'}}/>
-      <PostFilter
-        filter={filter}
-        setFilter={setFilter}
-      />
-      {
-        postError && <h1> Произошла ошибка ${postError} </h1>
-      }
-      <Pagination
-        totalPages={totalPages}
-        currentPage={page}
-        changePageCallback={changePage}
-      />
-      {isPostLoading
-          ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
-              <Loader/>
-            </div>
-          : <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
-      }
-
-
-    </div>
-  );
+    <BrowserRouter>
+      <Navbar/>
+      <AppRouter/>
+    </BrowserRouter>
+  )
 }
 
 export default App;
