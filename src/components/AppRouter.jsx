@@ -1,10 +1,17 @@
-import React from 'react'
-import { Route, Routes } from 'react-router-dom'
-import NotFound from '../pages/NotFound'
+import React, { useContext } from 'react'
+import { Route, Routes, Navigate } from 'react-router-dom'
 import { publicRoutes, privateRoutes } from '../router/routes'
+import { AuthContext } from '../context'
+import Loader from './UI/Loader/Loader'
 
 const AppRouter = () => {
-	let isAuth = true;
+
+	const { isAuth, isLoading } = useContext(AuthContext);
+
+	if (isLoading) {
+		return <Loader/>
+	}
+
 	return (
 		<Routes>
 			{
@@ -24,7 +31,7 @@ const AppRouter = () => {
 							exact={r.exact}
 						/>)
 			}
-			<Route path="*" element={<NotFound/>}/>
+			<Route path="*" element={<Navigate to={isAuth ? "/posts" : "/login"} replace />}/>
 		</Routes>
 	)
 }
