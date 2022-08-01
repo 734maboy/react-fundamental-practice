@@ -10,6 +10,8 @@ import Pagination from '../components/UI/Pagination/Pagination'
 import Loader from '../components/UI/Loader/Loader'
 import PostList from '../components/PostList'
 import PostForm from '../components/PostForm'
+import { useObserver } from '../hooks/useObserver'
+import SeSelect from '../components/UI/select/SeSelect'
 
 function Posts() {
 	const [posts, setPosts] = useState([]);
@@ -20,7 +22,6 @@ function Posts() {
 	const [limit, setLimit] = useState(10);
 	const [page, setPage] = useState(1);
 	const lastElement = useRef();
-	const observer = useRef();
 
 	const changePage = (pageNumber) => {
 		setPage(pageNumber);
@@ -39,23 +40,13 @@ function Posts() {
 		setVisible(false);
 	}
 
-	useEffect( () => {
-		if (isPostLoading) return;
-		if (observer.current) observer.current.disconnect();
-		var callback = function(entries, observer) {
-			if (entries[0].isIntersecting && page < totalPages) {
-				console.log(page);
-				setPage(page + 1);
-			}
-		};
-
-		observer.current = new IntersectionObserver(callback);
-		observer.current.observe(lastElement.current);
-	}, [isPostLoading]);
+	useObserver(lastElement, page < totalPages, isPostLoading, () => {
+		setPage(page + 1);
+	});
 
 	useEffect(() => {
 		fetchPosts(limit, page);
-	}, [page]);
+	}, [page, limit]);
 
 	const sortedAndSearchPosts = usePosts(posts, filter.sort, filter.query);
 
@@ -78,6 +69,17 @@ function Posts() {
 			<PostFilter
 				filter={filter}
 				setFilter={setFilter}
+			/>
+			<SeSelect
+				value={limit}
+				onChange={value => setLimit(value)}
+				defaultValue="Кол-во элементов на странице"
+				options={[
+					{ value: 5, name: '5'},
+					{ value: 10, name: '10'},
+					{ value: 25, name: '25'},
+					{ value: -1, name: 'Show All'},
+				]}
 			/>
 			{
 				postError && <h1> Произошла ошибка ${postError} </h1>
