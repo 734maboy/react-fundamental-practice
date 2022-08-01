@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useFetching } from '../hooks/useFetching'
 import PostService from '../API/PostService'
 import { getPagesCount } from '../utils/Pagination'
@@ -19,7 +19,8 @@ function Posts() {
 	const [totalPages, setTotalPages] = useState(0);
 	const [limit, setLimit] = useState(10);
 	const [page, setPage] = useState(1);
-
+	const lastElement = useRef();
+	const observer = useRef();
 
 	const changePage = (pageNumber) => {
 		setPage(pageNumber);
@@ -27,7 +28,7 @@ function Posts() {
 
 	const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
 		const response = await PostService.getAll(limit, page);
-		setPosts(response.data);
+		setPosts([...posts, ...response.data]);
 		const totalCount = response.headers['x-total-count'];
 		setTotalPages(getPagesCount(totalCount, limit));
 	})
@@ -37,6 +38,20 @@ function Posts() {
 		setPosts([...posts, newPost]);
 		setVisible(false);
 	}
+
+	useEffect( () => {
+		if (isPostLoading) return;
+		if (observer.current) observer.current.disconnect();
+		var callback = function(entries, observer) {
+			if (entries[0].isIntersecting && page < totalPages) {
+				console.log(page);
+				setPage(page + 1);
+			}
+		};
+
+		observer.current = new IntersectionObserver(callback);
+		observer.current.observe(lastElement.current);
+	}, [isPostLoading]);
 
 	useEffect(() => {
 		fetchPosts(limit, page);
@@ -72,13 +87,13 @@ function Posts() {
 				currentPage={page}
 				changePageCallback={changePage}
 			/>
-			{isPostLoading
-				? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
+			{isPostLoading &&
+				<div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
 					<Loader/>
 				</div>
-				: <PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
 			}
-
+			<PostList remove={removePost} posts={sortedAndSearchPosts} title={"Список постов"}/>
+			<div ref={lastElement} style={{ height: '20px', background: 'red'}}/>
 
 		</div>
 	);
